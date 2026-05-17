@@ -14,10 +14,18 @@ const StatsCard = ({ title, value, icon: Icon, color, trend, trendValue, delay =
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-      className="stat-card group"
+      whileHover={{ y: -4, scale: 1.015 }}
+      whileTap={{ scale: 0.995 }}
+      transition={{ 
+        type: "spring", 
+        stiffness: 120, 
+        damping: 18, 
+        delay,
+        layout: { duration: 0.2 }
+      }}
+      className="stat-card group cursor-pointer transition-shadow hover:shadow-lg dark:hover:shadow-black/30"
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">

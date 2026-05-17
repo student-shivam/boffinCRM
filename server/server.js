@@ -71,6 +71,7 @@ app.use('/api/employees', require('./routes/employeeRoutes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
 app.use('/api/leaves', require('./routes/leaveRoutes'));
 app.use('/api/salary', require('./routes/salaryRoutes'));
+app.use('/api/payroll', require('./routes/payrollRoutes'));
 app.use('/api/income', require('./routes/incomeRoutes'));
 app.use('/api/expenses', require('./routes/expenseRoutes'));
 app.use('/api/invoices', require('./routes/invoiceRoutes'));
@@ -85,6 +86,7 @@ app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/services', require('./routes/serviceRoutes'));
 app.use('/api/service-categories', require('./routes/serviceCategoryRoutes'));
 app.use('/api/upload', require('./routes/uploadRoutes'));
+app.use('/api/company', require('./routes/companyRoutes'));
 
 // Health check
 app.get('/api/health', (req, res) => {

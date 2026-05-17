@@ -58,7 +58,12 @@ const menuItems = [
   },
   { name: 'Reports', icon: HiOutlineChartBar, path: '/reports' },
   { name: 'Notifications', icon: HiOutlineBell, path: '/notifications' },
-  { name: 'Settings', icon: HiOutlineCog, path: '/profile' },
+  {
+    name: 'Settings', icon: HiOutlineCog, children: [
+      { name: 'My Profile', path: '/profile' },
+      { name: 'Company Settings', path: '/admin/company-settings' }
+    ]
+  },
 ];
 
 const SidebarItem = ({ item, collapsed }) => {
@@ -68,20 +73,26 @@ const SidebarItem = ({ item, collapsed }) => {
   if (item.children) {
     return (
       <div>
-        <button
-          onClick={() => setOpen(!open)}
-          className={`sidebar-link w-full justify-between ${open ? 'text-primary-500 dark:text-primary-400' : ''}`}
+        <motion.div
+          whileHover={collapsed ? { scale: 1.08 } : { x: 4, scale: 1.015 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
-          <div className="flex items-center gap-3">
-            <item.icon className="w-5 h-5 flex-shrink-0" />
-            {!collapsed && <span className="text-sm">{item.name}</span>}
-          </div>
-          {!collapsed && (
-            <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-              <HiOutlineChevronDown className="w-4 h-4" />
-            </motion.div>
-          )}
-        </button>
+          <button
+            onClick={() => setOpen(!open)}
+            className={`sidebar-link w-full justify-between ${open ? 'text-primary-500 dark:text-primary-400' : ''}`}
+          >
+            <div className="flex items-center gap-3">
+              <item.icon className="w-5 h-5 flex-shrink-0" />
+              {!collapsed && <span className="text-sm">{item.name}</span>}
+            </div>
+            {!collapsed && (
+              <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                <HiOutlineChevronDown className="w-4 h-4" />
+              </motion.div>
+            )}
+          </button>
+        </motion.div>
         <AnimatePresence>
           {open && !collapsed && (
             <motion.div
@@ -92,20 +103,26 @@ const SidebarItem = ({ item, collapsed }) => {
               className="overflow-hidden ml-4 border-l-2 border-slate-300 dark:border-slate-700/80"
             >
               {item.children.map((child) => (
-                <NavLink
+                <motion.div
                   key={child.path}
-                  to={child.path}
-                  onClick={() => dispatch(closeMobileSidebar())}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2 px-4 py-2 ml-2 text-sm rounded-lg transition-colors ${
-                      isActive
-                        ? 'text-primary-600 dark:text-primary-400 font-semibold bg-primary-50 dark:bg-primary-900/20'
-                        : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium'
-                    }`
-                  }
+                  whileHover={{ x: 6, scale: 1.015 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 >
-                  {child.name}
-                </NavLink>
+                  <NavLink
+                    to={child.path}
+                    onClick={() => dispatch(closeMobileSidebar())}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-4 py-2 ml-2 text-sm rounded-lg transition-colors ${
+                        isActive
+                          ? 'text-primary-600 dark:text-primary-400 font-semibold bg-primary-50 dark:bg-primary-900/20'
+                          : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white font-medium'
+                      }`
+                    }
+                  >
+                    {child.name}
+                  </NavLink>
+                </motion.div>
               ))}
             </motion.div>
           )}
@@ -115,14 +132,20 @@ const SidebarItem = ({ item, collapsed }) => {
   }
 
   return (
-    <NavLink
-      to={item.path}
-      onClick={() => dispatch(closeMobileSidebar())}
-      className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+    <motion.div
+      whileHover={collapsed ? { scale: 1.08 } : { x: 4, scale: 1.015 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
     >
-      <item.icon className="w-5 h-5 flex-shrink-0" />
-      {!collapsed && <span className="text-sm">{item.name}</span>}
-    </NavLink>
+      <NavLink
+        to={item.path}
+        onClick={() => dispatch(closeMobileSidebar())}
+        className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+      >
+        <item.icon className="w-5 h-5 flex-shrink-0" />
+        {!collapsed && <span className="text-sm">{item.name}</span>}
+      </NavLink>
+    </motion.div>
   );
 };
 
@@ -139,24 +162,35 @@ const Sidebar = () => {
       {/* Desktop */}
       <motion.aside
         animate={{ width: sidebarOpen ? 260 : 76 }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1.0] }}
         className="hidden lg:flex flex-col bg-white dark:bg-dark-card border-r border-slate-200/90 dark:border-slate-800 h-screen sticky top-0 overflow-hidden"
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className={`flex items-center gap-3 py-4 border-b border-slate-200/90 dark:border-slate-800 transition-all duration-300 ${sidebarOpen ? 'px-6' : 'justify-center px-2'}`}>
-            <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-slate-50 dark:bg-slate-900/60 flex-shrink-0 border border-slate-200/80 dark:border-slate-800/80 p-1 shadow-sm">
-              <img 
-                src={companyLogoSrc} 
-                alt="Company Logo" 
-                className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal" 
-              />
+          {/* Logo and Inline Toggle Button */}
+          <div className={`flex items-center transition-all duration-300 border-b border-slate-200/90 dark:border-slate-800 py-4 ${sidebarOpen ? 'px-6 justify-between gap-3' : 'px-2 flex-col gap-2 justify-center'}`}>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-slate-50 dark:bg-slate-900/60 flex-shrink-0 border border-slate-200/80 dark:border-slate-800/80 p-1 shadow-sm">
+                <img 
+                  src={companyLogoSrc} 
+                  alt="Company Logo" 
+                  className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal" 
+                />
+              </div>
+              {sidebarOpen && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overflow-hidden">
+                  <h1 className="font-extrabold text-slate-950 dark:text-slate-50 text-base leading-tight tracking-tight max-w-[120px] whitespace-normal break-words">{companyName}</h1>
+                </motion.div>
+              )}
             </div>
-            {sidebarOpen && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overflow-hidden">
-                <h1 className="font-extrabold text-slate-950 dark:text-slate-50 text-base leading-tight tracking-tight max-w-[165px] whitespace-normal break-words">{companyName}</h1>
-              </motion.div>
-            )}
+            
+            <button
+              onClick={() => dispatch(toggleSidebar())}
+              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-all flex-shrink-0 border border-slate-200/50 dark:border-slate-800/50 shadow-sm"
+              title={sidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+            >
+              {sidebarOpen ? <HiOutlineChevronLeft className="w-4 h-4" /> : <HiOutlineChevronRight className="w-4 h-4" />}
+            </button>
           </div>
 
           {/* Menu */}
@@ -165,16 +199,6 @@ const Sidebar = () => {
               <SidebarItem key={item.name} item={item} collapsed={!sidebarOpen} />
             ))}
           </nav>
-
-          {/* Collapse button */}
-          <div className="px-3 py-4 border-t border-gray-200 dark:border-dark-border">
-            <button
-              onClick={() => dispatch(toggleSidebar())}
-              className="sidebar-link w-full justify-center"
-            >
-              {sidebarOpen ? <HiOutlineChevronLeft className="w-5 h-5" /> : <HiOutlineChevronRight className="w-5 h-5" />}
-            </button>
-          </div>
         </div>
       </motion.aside>
 

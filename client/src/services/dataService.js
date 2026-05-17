@@ -68,6 +68,15 @@ export const salaryService = {
   downloadSlip: (id) => api.get(`/salary/${id}/slip`, { responseType: 'blob' }),
 };
 
+export const payrollService = {
+  getAll: (params) => api.get('/payroll', { params }),
+  getById: (id) => api.get(`/payroll/${id}`),
+  generate: (data) => api.post('/payroll/generate', data),
+  update: (id, data) => api.put(`/payroll/${id}`, data),
+  sendEmail: (id) => api.post('/payroll/send-email', { id }),
+  downloadSlip: (id) => api.get(`/payroll/${id}/slip`, { responseType: 'blob' }),
+};
+
 export const incomeService = {
   getAll: (params) => api.get('/income', { params }),
   create: (data) => api.post('/income', data),
@@ -181,4 +190,9 @@ export const adminProfileService = {
   getProfile: () => api.get('/admin/profile'),
   updateProfile: (data) => api.put('/admin/profile', data),
   changePassword: (data) => api.put('/admin/change-password', data),
+};
+
+export const companyService = {
+  getDetails: () => api.get('/company'),
+  updateDetails: (data) => api.put('/company', data),
 };

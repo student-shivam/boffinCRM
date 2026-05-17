@@ -11,20 +11,23 @@ const seedAdmin = async () => {
     console.log('MongoDB Connected for seeding...');
 
     // Check if admin already exists
-    const existingAdmin = await Admin.findOne({ email: process.env.ADMIN_EMAIL || 'admin@company.com' });
+    let admin = await Admin.findOne({ email: process.env.ADMIN_EMAIL || 'admin@company.com' });
 
-    if (existingAdmin) {
-      console.log('Admin already exists. Skipping seed.');
-      process.exit(0);
+    if (admin) {
+      console.log('Admin already exists. Updating password/name to match env vars...');
+      admin.name = process.env.ADMIN_NAME || 'Ravindra Yadav';
+      admin.password = process.env.ADMIN_PASSWORD || 'admin123';
+      await admin.save();
+      console.log('Admin updated and password hashed successfully!');
+    } else {
+      admin = await Admin.create({
+        name: process.env.ADMIN_NAME || 'Ravindra Yadav',
+        email: process.env.ADMIN_EMAIL || 'admin@company.com',
+        password: process.env.ADMIN_PASSWORD || 'admin123',
+      });
+      console.log(`Admin created successfully!`);
     }
 
-    const admin = await Admin.create({
-      name: process.env.ADMIN_NAME || 'Admin',
-      email: process.env.ADMIN_EMAIL || 'admin@company.com',
-      password: process.env.ADMIN_PASSWORD || 'admin123',
-    });
-
-    console.log(`Admin created successfully!`);
     console.log(`Email: ${admin.email}`);
     console.log(`Password: ${process.env.ADMIN_PASSWORD || 'admin123'}`);
     process.exit(0);

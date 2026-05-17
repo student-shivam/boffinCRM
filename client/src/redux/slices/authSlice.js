@@ -74,6 +74,12 @@ const authSlice = createSlice({
         state.admin = { ...state.admin, ...action.payload };
         localStorage.setItem('admin', JSON.stringify(state.admin));
       })
+      .addCase(getMe.rejected, (state) => {
+        state.admin = null;
+        state.isAuthenticated = false;
+        localStorage.removeItem('admin');
+        localStorage.removeItem('token');
+      })
       .addCase(forgotPassword.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(forgotPassword.fulfilled, (state, action) => { state.loading = false; state.message = action.payload; })
       .addCase(forgotPassword.rejected, (state, action) => { state.loading = false; state.error = action.payload; })

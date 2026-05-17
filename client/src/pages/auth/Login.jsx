@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { login, clearError } from '../../redux/slices/authSlice';
 import toast from 'react-hot-toast';
+import TechBackground from '../../components/ui/TechBackground';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -27,61 +28,69 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg flex items-center justify-center p-4">
-      {/* Background gradient effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-500/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-slate-950">
+      {/* Premium Constellation & Tech Background */}
+      <TechBackground />
 
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative w-full max-w-md"
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+        className="relative w-full max-w-[440px] z-20"
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-28 h-28 rounded-2xl overflow-hidden flex items-center justify-center mx-auto mb-4 shadow-lg bg-white p-2 border border-gray-150">
+          <div className="w-24 h-24 rounded-2xl overflow-hidden flex items-center justify-center mx-auto mb-4 bg-white/95 shadow-[0_0_35px_rgba(99,102,241,0.25)] p-2 border border-white/10 hover:scale-105 transition-all duration-350 ease-out">
             <img 
               src="/logo/boffin logo.jpg" 
               alt="Company Logo" 
               className="w-full h-full object-contain" 
             />
           </div>
-          <h1 className="text-2xl font-bold text-white">Enterprise Management</h1>
-          <p className="text-gray-400 mt-1 text-sm">Sign in to your admin dashboard</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-indigo-200">
+            Enterprise Management
+          </h1>
+          <p className="text-slate-400 mt-2 text-sm tracking-wide">
+            Sign in to your admin dashboard
+          </p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-dark-card/80 backdrop-blur-xl border border-dark-border/50 rounded-2xl p-8 shadow-2xl">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Premium Glassmorphic Login Card */}
+        <div className="bg-slate-900/50 backdrop-blur-2xl border border-white/[0.08] rounded-3xl p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-indigo-500/20 transition-all duration-500 ease-out">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                Email Address
+              </label>
               <input
                 id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@company.com"
-                className="input-field"
+                className="w-full px-4 py-3 bg-slate-950/60 border border-white/5 rounded-xl text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/80 outline-none transition-all duration-300 backdrop-blur-sm shadow-inner"
                 autoComplete="email"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                Password
+              </label>
               <input
                 id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="input-field"
+                className="w-full px-4 py-3 bg-slate-950/60 border border-white/5 rounded-xl text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/80 outline-none transition-all duration-300 backdrop-blur-sm shadow-inner"
                 autoComplete="current-password"
               />
             </div>
             <div className="flex items-center justify-end">
-              <Link to="/forgot-password" className="text-sm text-primary-400 hover:text-primary-300 transition-colors">
+              <Link 
+                to="/forgot-password" 
+                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors tracking-wide"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -89,7 +98,7 @@ const Login = () => {
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="btn-primary w-full flex items-center justify-center gap-2 py-3"
+              className="w-full py-3.5 px-6 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 hover:opacity-95 shadow-[0_4px_25px_rgba(99,102,241,0.25)] hover:shadow-[0_4px_35px_rgba(168,85,247,0.4)] transition-all duration-300 flex items-center justify-center gap-2 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:pointer-events-none"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -99,10 +108,6 @@ const Login = () => {
             </button>
           </form>
         </div>
-
-        <p className="text-center text-xs text-gray-500 mt-6">
-          Enterprise Management System v1.0
-        </p>
       </motion.div>
     </div>
   );

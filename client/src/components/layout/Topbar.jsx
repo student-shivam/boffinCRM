@@ -50,9 +50,9 @@ const Topbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 dark:bg-dark-card/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
+    <header className="sticky top-0 z-30 bg-[#f8fafc]/90 dark:bg-[#0B1329]/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.05)] dark:shadow-black/20">
       <div className="flex items-center justify-between px-4 lg:px-6 h-16">
-        {/* Mobile menu */}
+        {/* Mobile menu & Brand active hub */}
         <div className="flex items-center gap-4 flex-1">
           <button
             onClick={() => dispatch(toggleMobileSidebar())}
@@ -60,6 +60,12 @@ const Topbar = () => {
           >
             <HiOutlineBars3 className="w-6 h-6" />
           </button>
+          <div className="hidden lg:flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Live Hub</span>
+            <span className="text-slate-300 dark:text-slate-700 text-xs">|</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Boffin CRM Suite</span>
+          </div>
         </div>
 
         {/* Actions */}
@@ -120,7 +126,7 @@ const Topbar = () => {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => { setShowProfile(!showProfile); setShowNotifications(false); }}
-              className="flex items-center gap-2 p-1.5 pr-3 rounded-xl hover:bg-gray-100 dark:hover:bg-dark-hover transition-colors"
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-dark-hover border border-slate-200/60 dark:border-slate-800/80 shadow-sm transition-all duration-200 flex items-center justify-center"
             >
               <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
                 {admin?.profileImage || admin?.avatar ? (
@@ -135,9 +141,6 @@ const Topbar = () => {
                   </span>
                 )}
               </div>
-              <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 hidden sm:block">
-                {admin?.fullName || admin?.name || 'Admin'}
-              </span>
             </button>
 
             <AnimatePresence>
@@ -150,11 +153,26 @@ const Topbar = () => {
                   className="absolute right-0 top-12 w-56 bg-white dark:bg-dark-card rounded-2xl shadow-2xl border border-gray-200 dark:border-dark-border overflow-hidden"
                 >
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-dark-border">
-                    <p className="font-semibold text-sm text-gray-900 dark:text-white">{admin?.name}</p>
-                    <p className="text-xs text-gray-400">{admin?.email}</p>
+                    <p className="font-bold text-sm text-slate-800 dark:text-white leading-tight">{admin?.name || admin?.fullName || 'Admin User'}</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{admin?.email}</p>
+                  </div>
+                  <div className="py-1 border-b border-gray-100 dark:border-dark-border">
+                    <button 
+                      onClick={() => {
+                        setShowProfile(false);
+                        navigate('/profile');
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-dark-hover transition-colors font-semibold"
+                    >
+                      <HiOutlineUser className="w-4 h-4 text-slate-400" />
+                      My Profile
+                    </button>
                   </div>
                   <div className="py-1">
-                    <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+                    <button 
+                      onClick={handleLogout} 
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-semibold"
+                    >
                       <HiOutlineArrowRightOnRectangle className="w-4 h-4" />
                       Logout
                     </button>

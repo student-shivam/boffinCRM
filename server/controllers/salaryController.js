@@ -1,6 +1,7 @@
 const Salary = require('../models/Salary');
 const Employee = require('../models/Employee');
 const Admin = require('../models/Admin');
+const Company = require('../models/Company');
 const PDFDocument = require('pdfkit');
 const { logActivity, getPagination, getMonthName } = require('../utils/helpers');
 const https = require('https');
@@ -110,26 +111,33 @@ const generateSalarySlip = async (req, res) => {
     const salary = await Salary.findById(req.params.id).populate('employee', 'name email department designation joiningDate');
     if (!salary) return res.status(404).json({ success: false, message: 'Salary not found' });
 
-    // Fetch Admin/Company Settings
+    // Fetch Company & Admin Settings
+    const company = await Company.findOne();
     const admin = await Admin.findOne();
-    const companyName = admin?.companyName || "Boffin Web Technology";
-    const companyAddress = admin?.companyAddress || "Noida, Uttar Pradesh, India";
-    const companyEmail = admin?.companyEmail || "contact@boffinweb.com";
-    const companyPhone = admin?.companyPhone || "+91 99999 99999";
+
+    const companyName = company?.companyName || admin?.companyName || "Boffin Web Technology";
+    const companyAddress = company?.companyAddress || admin?.companyAddress || "Noida, Uttar Pradesh, India";
+    const companyEmail = company?.companyEmail || admin?.companyEmail || "contact@boffinweb.com";
+    const companyPhone = company?.companyPhone || admin?.companyPhone || "+91 99999 99999";
+    const website = company?.website || admin?.companyWebsite || "https://boffinweb.com";
+    const gstNumber = company?.gstNumber || admin?.gstNumber || "";
+    const panNumber = company?.panNumber || "";
+    const themeColor = company?.themeColor || "#1e3a8a"; // Dynamic theme color
 
     // Load Company Logo Buffer
     let logoBuffer = null;
     let logoPath = null;
     try {
-      if (admin?.companyLogo) {
-        if (admin.companyLogo.startsWith('http')) {
-          logoBuffer = await fetchImageBuffer(admin.companyLogo);
+      const logoUrl = company?.companyLogo || admin?.companyLogo;
+      if (logoUrl) {
+        if (logoUrl.startsWith('http')) {
+          logoBuffer = await fetchImageBuffer(logoUrl);
         } else {
-          logoPath = admin.companyLogo;
+          logoPath = logoUrl;
         }
       }
     } catch (err) {
-      console.error('Error fetching admin logo:', err);
+      console.error('Error fetching company logo:', err);
     }
 
     if (!logoBuffer && !logoPath) {
@@ -137,6 +145,28 @@ const generateSalarySlip = async (req, res) => {
       if (fs.existsSync(defaultLogoPath)) {
         logoBuffer = fs.readFileSync(defaultLogoPath);
       }
+    }
+
+    // Load Signature Buffer
+    let signatureBuffer = null;
+    try {
+      const sigUrl = company?.signature;
+      if (sigUrl && sigUrl.startsWith('http')) {
+        signatureBuffer = await fetchImageBuffer(sigUrl);
+      }
+    } catch (err) {
+      console.error('Error fetching signature:', err);
+    }
+
+    // Load Stamp Buffer
+    let stampBuffer = null;
+    try {
+      const stampUrl = company?.stamp;
+      if (stampUrl && stampUrl.startsWith('http')) {
+        stampBuffer = await fetchImageBuffer(stampUrl);
+      }
+    } catch (err) {
+      console.error('Error fetching stamp:', err);
     }
 
     // Load QR Code Buffer (Online verification)
@@ -156,6 +186,17 @@ const generateSalarySlip = async (req, res) => {
     doc.pipe(res);
 
     // ==========================================
+    // WATERMARK BACKGROUND LOGO (Dynamic Watermark!)
+    // ==========================================
+    if (logoBuffer) {
+      doc.save();
+      doc.opacity(0.04);
+      // Center of A4 is x = 297.64, y = 420.94. Drawing with width = 200, height = 200
+      doc.image(logoBuffer, 197.64, 320.94, { width: 200, height: 200 });
+      doc.restore();
+    }
+
+    // ==========================================
     // HEADER SECTION
     // ==========================================
     // Draw Logo Box
@@ -166,16 +207,19 @@ const generateSalarySlip = async (req, res) => {
       doc.image(logoPath, 52, 52, { width: 44, height: 44 });
     } else {
       // Draw dynamic fallback text avatar
-      doc.fillColor('#1e3a8a').font('Helvetica-Bold').fontSize(16).text(companyName.charAt(0).toUpperCase(), 50, 65, { width: 48, align: 'center' });
+      doc.fillColor(themeColor).font('Helvetica-Bold').fontSize(16).text(companyName.charAt(0).toUpperCase(), 50, 65, { width: 48, align: 'center' });
     }
 
     // Draw Company Name & Details
     doc.font('Helvetica-Bold').fontSize(14).fillColor('#0f172a').text(companyName, 110, 50);
     doc.font('Helvetica').fontSize(8).fillColor('#475569').text(companyAddress, 110, 67, { width: 230 });
-    doc.text(`Email: ${companyEmail}  |  Phone: ${companyPhone}`, 110, 80, { width: 240 });
+    
+    let contactInfo = `Email: ${companyEmail}  |  Phone: ${companyPhone}`;
+    if (gstNumber) contactInfo += `  |  GST: ${gstNumber}`;
+    doc.text(contactInfo, 110, 80, { width: 240 });
 
     // Draw Payslip Title (Top Right)
-    doc.font('Helvetica-Bold').fontSize(18).fillColor('#1e3a8a').text('SALARY SLIP', 350, 50, { align: 'right', width: 195 });
+    doc.font('Helvetica-Bold').fontSize(18).fillColor(themeColor).text('SALARY SLIP', 350, 50, { align: 'right', width: 195 });
     doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#2563eb').text('OFFICIAL STATEMENT OF EARNINGS', 350, 68, { align: 'right', width: 195 });
     doc.font('Helvetica').fontSize(8.5).fillColor('#475569').text(`Period: ${getMonthName(salary.month)} ${salary.year}`, 350, 79, { align: 'right', width: 195 });
 
@@ -218,7 +262,7 @@ const generateSalarySlip = async (req, res) => {
 
     // 1. EARNINGS CARD
     // Header
-    doc.fillColor('#1e3a8a').roundedRect(50, tableTop, 240, 22, 6).fill();
+    doc.fillColor(themeColor).roundedRect(50, tableTop, 240, 22, 6).fill();
     doc.font('Helvetica-Bold').fontSize(8).fillColor('#ffffff').text('EARNINGS', 62, tableTop + 7);
     doc.text('AMOUNT', 220, tableTop + 7, { width: 60, align: 'right' });
     // Box
@@ -236,7 +280,7 @@ const generateSalarySlip = async (req, res) => {
     // Earnings Footer Divider
     doc.strokeColor('#e2e8f0').lineWidth(1).moveTo(50, tableTop + 105).lineTo(290, tableTop + 105).stroke();
     // Earnings Total
-    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1e3a8a').text('Total Earnings', 62, tableTop + 114);
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor(themeColor).text('Total Earnings', 62, tableTop + 114);
     const totalEarnings = salary.basicSalary + salary.bonus;
     doc.text(`₹${totalEarnings.toLocaleString()}`, 220, tableTop + 114, { width: 60, align: 'right' });
 
@@ -267,7 +311,7 @@ const generateSalarySlip = async (req, res) => {
     // HIGHLIGHTED NET SALARY CALLOUT CARD
     // ==========================================
     const cardTop = tableTop + tableHeight + 15;
-    doc.fillColor('#1e3a8a').roundedRect(50, cardTop, 495.28, 65, 6).fill();
+    doc.fillColor(themeColor).roundedRect(50, cardTop, 495.28, 65, 6).fill();
 
     // Left Column: Take Home Salary
     doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#93c5fd').text('NET TAKE-HOME SALARY', 65, cardTop + 13);
@@ -279,7 +323,7 @@ const generateSalarySlip = async (req, res) => {
     doc.font('Helvetica').fontSize(8.5).fillColor('#ffffff').text(`Rupees ${inWords}`, 290, cardTop + 24, { width: 240, lineGap: 1 });
 
     // ==========================================
-    // QR VERIFICATION & DIGITAL SIGNATURE
+    // QR VERIFICATION & DIGITAL SIGNATURE (Premium Features!)
     // ==========================================
     const verificationTop = cardTop + 80;
 
@@ -290,18 +334,18 @@ const generateSalarySlip = async (req, res) => {
     } else {
       // Mockup elegant vector QR
       doc.fillColor('#f8fafc').rect(53, verificationTop + 3, 64, 64).fill();
-      doc.fillColor('#1e3a8a')
+      doc.fillColor(themeColor)
         .rect(57, verificationTop + 7, 16, 16).fill()
         .fillColor('#ffffff').rect(60, verificationTop + 10, 10, 10).fill()
-        .fillColor('#1e3a8a').rect(63, verificationTop + 13, 4, 4).fill()
+        .fillColor(themeColor).rect(63, verificationTop + 13, 4, 4).fill()
 
         .rect(97, verificationTop + 7, 16, 16).fill()
         .fillColor('#ffffff').rect(100, verificationTop + 10, 10, 10).fill()
-        .fillColor('#1e3a8a').rect(103, verificationTop + 13, 4, 4).fill()
+        .fillColor(themeColor).rect(103, verificationTop + 13, 4, 4).fill()
 
         .rect(57, verificationTop + 47, 16, 16).fill()
         .fillColor('#ffffff').rect(60, verificationTop + 50, 10, 10).fill()
-        .fillColor('#1e3a8a').rect(63, verificationTop + 53, 4, 4).fill();
+        .fillColor(themeColor).rect(63, verificationTop + 53, 4, 4).fill();
 
       doc.fillColor('#64748b')
         .rect(79, verificationTop + 27, 8, 8).fill()
@@ -318,7 +362,22 @@ const generateSalarySlip = async (req, res) => {
     doc.strokeColor('#bae6fd').lineWidth(1).roundedRect(305, verificationTop, 240, 70, 6).stroke();
 
     doc.font('Helvetica-Bold').fontSize(8).fillColor('#0369a1').text('✓ DIGITALLY SIGNED & VERIFIED', 317, verificationTop + 12);
-    doc.font('Helvetica').fontSize(7.5).fillColor('#075985').text(`Issuer: ${companyName}\nSecurity Seal: Secured Payslip System\nDate Generated: ${new Date().toLocaleString()}`, 317, verificationTop + 26, { lineGap: 2 });
+    
+    if (signatureBuffer || stampBuffer) {
+      let issuerText = `Issuer: ${companyName}`;
+      if (panNumber) issuerText += `  |  PAN: ${panNumber}`;
+      doc.font('Helvetica').fontSize(7.5).fillColor('#075985').text(issuerText, 317, verificationTop + 24);
+      doc.font('Helvetica').fontSize(6.5).fillColor('#075985').text(`Date: ${new Date().toLocaleDateString()}`, 317, verificationTop + 33);
+      
+      if (signatureBuffer) {
+        doc.image(signatureBuffer, 317, verificationTop + 42, { height: 22 });
+      }
+      if (stampBuffer) {
+        doc.image(stampBuffer, 480, verificationTop + 10, { width: 50, height: 50 });
+      }
+    } else {
+      doc.font('Helvetica').fontSize(7.5).fillColor('#075985').text(`Issuer: ${companyName}\nSecurity Seal: Secured Payslip System\nDate Generated: ${new Date().toLocaleString()}`, 317, verificationTop + 26, { lineGap: 2 });
+    }
 
     // ==========================================
     // TRANSACTION DETAILS
@@ -332,7 +391,7 @@ const generateSalarySlip = async (req, res) => {
     // FOOTER SECTION
     // ==========================================
     doc.strokeColor('#e2e8f0').lineWidth(0.75).moveTo(50, txnTop + 40).lineTo(545, txnTop + 40).stroke();
-    doc.font('Helvetica').fontSize(7.5).fillColor('#94a3b8').text('This is an official system-generated digital document compiled by Boffin Web Technology. No physical signature is required.', 50, txnTop + 49, { align: 'center', width: 495.28 });
+    doc.font('Helvetica').fontSize(7.5).fillColor('#94a3b8').text(`This is an official system-generated digital document compiled by ${companyName}. No physical signature is required.`, 50, txnTop + 49, { align: 'center', width: 495.28 });
     doc.text('For any payroll queries, please contact the Human Resources or Finance department.', 50, txnTop + 60, { align: 'center', width: 495.28 });
 
     doc.end();

@@ -39,6 +39,8 @@ import Gallery from './pages/Gallery';
 import Testimonials from './pages/Testimonials';
 import SeoSettings from './pages/SeoSettings';
 import ProfileSettings from './pages/ProfileSettings';
+import CompanySettings from './pages/CompanySettings';
+import SalarySlipPreview from './pages/SalarySlipPreview';
 
 function App() {
   const dispatch = useDispatch();
@@ -69,6 +71,9 @@ function App() {
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+      {/* Standalone Premium Salary Slip Preview */}
+      <Route path="/payroll/salary-slip/:id" element={<ProtectedRoute><SalarySlipPreview /></ProtectedRoute>} />
 
       {/* Dashboard Routes */}
       <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -102,6 +107,7 @@ function App() {
         <Route path="admin/gallery" element={<Gallery />} />
         <Route path="admin/testimonials" element={<Testimonials />} />
         <Route path="admin/seo-settings" element={<SeoSettings />} />
+        <Route path="admin/company-settings" element={<CompanySettings />} />
 
         {/* Profile Settings */}
         <Route path="profile" element={<ProfileSettings />} />
